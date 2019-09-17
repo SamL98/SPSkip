@@ -25,3 +25,4 @@ iOS/frida-scripts/__handlers__/
 /.vscode/
 MacOS/hookcase/
 common/__pycache__/
+iOS/frida-scripts/
