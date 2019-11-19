@@ -24,5 +24,6 @@ iOS/frida-scripts/__handlers__/
 .DS_Store
 /.vscode/
 MacOS/hookcase/
+MacOS/feat_resolver/
 common/__pycache__/
 iOS/frida-scripts/
