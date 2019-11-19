@@ -63,6 +63,8 @@ void new_nextHandler(int64_t param1, int64_t param2, int64_t param3)
 
 void new_mkHandler(void ***appDelegate, int32_t keyCode)
 {
+    printf("In new mediaKey handler\n");
+    
     if (handlersSet)
         goto call_orig;
     
@@ -130,9 +132,17 @@ void patch_mk()
 
 static void __attribute__((constructor)) initialize(void)
 {
+    printf("[+] Initializing libskip\n");
+    
+    printf("[+] Resolving mediaKey handler address\n");
     mkHandler = resolve_mediaKey_subproc_addr(&mk_reloc_addr, &mk_reloc_pc);
+    printf("[+] mediaKey handler address at %p\n\treloc address at %p\n\treloc pc 0x%llx\n",mkHandler, mk_reloc_addr, mk_reloc_pc);
+    
     orig_mk_reloc_addr = *mk_reloc_addr;
+    
+    printf("[+] Patching mediaKey handler\n");
     patch_mk();
+    printf("[+] Finished patching mediaKey handler\n");
     
     skipman = [[SkipManager alloc] init];
     asman = [[AppleScriptManager alloc] init];

@@ -14,6 +14,6 @@ The `LibSkipiOS` directory builds to the library that can be used for skiptracin
 
 The `server` directory contains the code needed to run the server that will listen for skips exfiltrated from the iOS app.
 
-## Commoon
+## Common
 
 Contains the script `load_dylib.py` that inserts the specified library into the specified binary. It also has the ability to disable ASLR for the binary.
