@@ -2,17 +2,21 @@ import shutil
 from xxd_helper import read_int, write_int, write_str
 import argparse
 
-def edit_header(f, dylib_path, disable_aslr, is64):
+def edit_header(f, dylib_path, disable_aslr, is64, remove_dylib):
 	dylib_lc = 0xc
 	dylib_lc_size = 24
 
 	total_lc_size = dylib_lc_size + len(dylib_path) + 1
-	if total_lc_size % 4 != 0:
-		total_lc_size += 4 - (total_lc_size % 4)
+	if total_lc_size % 8 != 0:
+		total_lc_size += 8 - (total_lc_size % 8)
 
 	f.seek(16) # ncmd offset
 	ncmd = read_int(f, 4)
 	sizeofcmds = read_int(f, 4)
+
+	if remove_dylib:
+		f.seek(-8, 1)
+		write_int(f, ncmd-1, 4)
 
 	f.seek(16)
 	write_int(f, ncmd+1, 4)
@@ -46,7 +50,8 @@ if __name__ =='__main__':
 	parser.add_argument('--dylib', dest='dylib', type=str)
 	parser.add_argument('--disable_aslr', dest='disable_aslr', action='store_true')
 	parser.add_argument('--is64', dest='is64', action='store_true')
+	parser.add_argument('--remove', dest='remove', action='store_true')
 	args = parser.parse_args()
 
 	with open(args.binary, 'r+b') as f:
-		edit_header(f, args.dylib, args.disable_aslr, args.is64)
+		edit_header(f, args.dylib, args.disable_aslr, args.is64, args.remove)
