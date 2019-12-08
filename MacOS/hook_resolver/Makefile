@@ -1,4 +1,4 @@
-PWD=/Users/samlerner/Projects/SPSkip/hook_resolver
+PWD=/Users/samlerner/Projects/SPSkip/MacOS/hook_resolver
 HBPATH=/usr/local/Cellar
 
 resolver: addr_resolver find_method objc_types find_subproc
