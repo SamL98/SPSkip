@@ -2,6 +2,12 @@
 
 Libraries for hooking the skip/previous functions in the Spotify iOS and MacOS clients.
 
+For more information on the basic MacOS functionality, see the following blog post: [https://medium.com/@lerner98/skiptracing-reversing-spotify-app-3a6df367287d]
+
+For information on the iOS functionality: [https://medium.com/@lerner98/skiptracing-part-2-ios-3c610205858b]
+
+On the automatic hooking for MacOS: [https://medium.com/swlh/skiptracing-automated-hook-resolution-74eda756533d]
+
 ## MacOS
 
 The `hook_resolver` directory builds to the library that resolves addresses necessary for hooking.
