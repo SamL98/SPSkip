@@ -6,7 +6,7 @@
 
 uint64_t
 find_subproc(FILE *fp,
-			 objc_method *meth,
+			 uint64_t imp_ptr,
 			 int64_t text_addend,
 			 int32_t **reloc_addr,
 			 int64_t *reloc_pc)
@@ -20,13 +20,11 @@ find_subproc(FILE *fp,
 
 	uint64_t target_addr = 0;
 
-	fseek(fp, (meth->imp) & 0xffffff, SEEK_SET);
+	fseek(fp, imp_ptr & 0xffffff, SEEK_SET);
 	fread((void *)code, 1, NBYTES-1, fp);
 	code[NBYTES-1] = 0;
 
-	// The imp offset was already fixed up, so we unfix it to get the virtual address.
-	// It doesn't really matter but it's nice maybe.
-	start_addr = (size_t)((int64_t)(meth->imp) - text_addend);
+	start_addr = (size_t)((int64_t)imp_ptr - text_addend);
 
 	if (cs_open(CS_ARCH_X86, CS_MODE_64, &handle) != CS_ERR_OK) {
 		fprintf(stderr, "Couldn't open capstone\n");

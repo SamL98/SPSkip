@@ -21,10 +21,6 @@ mk_handler_func_t *mkHandler;
 prev_next_func_t *prevHandler;
 prev_next_func_t *nextHandler;
 
-int32_t  *mk_reloc_addr;
-int32_t  orig_mk_reloc_addr;
-int64_t  mk_reloc_pc;
-
 uint8_t prevStructOffset = 0x50;
 char handlersSet = 0;
 
@@ -63,12 +59,10 @@ void new_nextHandler(int64_t param1, int64_t param2, int64_t param3)
 
 void new_mkHandler(void ***appDelegate, int32_t keyCode)
 {
-    printf("In new mediaKey handler\n");
-    
     if (handlersSet)
         goto call_orig;
     
-    printf("Patching media key handlers\n");
+    printf("[+] Patching media key handlers\n");
     
     int      mprot_res;
     uint64_t prot_addr;
@@ -87,16 +81,16 @@ void new_mkHandler(void ***appDelegate, int32_t keyCode)
     
     if ((mprot_res = mprotect((void *)prot_addr, prot_size, PROT_WRITE)))
     {
-        printf("Write protect failed: %d\n", errno);
+        printf("[-] Write protect failed: %d\n", errno);
         exit(1);
     }
     
     *fp = (uint64_t)(&new_prevHandler);
     *(fp+1) = (uint64_t)(&new_nextHandler);
     
-    if ((mprot_res = mprotect((void *)prot_addr, prot_size, PROT_READ | PROT_EXEC)))
+    if ((mprot_res = mprotect((void *)prot_addr, prot_size, PROT_READ | PROT_EXEC | PROT_WRITE)))
     {
-        printf("Read | Exec protect failed: %d\n", errno);
+        printf("[-] Read | Exec protect failed: %d\n", errno);
         exit(1);
     }
     
@@ -106,18 +100,20 @@ call_orig:
     (*mkHandler)(appDelegate, keyCode);
 }
 
-void patch_mk()
+void patch_mk(int32_t *mk_reloc_addr, int64_t mk_reloc_pc)
 {
     int      mprot_res;
     uint64_t prot_addr;
     size_t   prot_size;
+    
+    printf("[+] Patching mediaKey handler\n");
     
     prot_addr = (uint64_t)mk_reloc_addr & ps_mask;
     prot_size = 4 + ((uint64_t)mk_reloc_addr - prot_addr);
     
     if ((mprot_res = mprotect((void *)prot_addr, prot_size, PROT_WRITE)))
     {
-        printf("Write protect failed: %d\n", errno);
+        printf("[-] Write protect failed: %d\n", errno);
         exit(1);
     }
     
@@ -125,24 +121,36 @@ void patch_mk()
     
     if ((mprot_res = mprotect((void *)prot_addr, prot_size, PROT_READ | PROT_EXEC)))
     {
-        printf("Read | Exec protect failed: %d\n", errno);
+        printf("[-] Read | Exec protect failed: %d\n", errno);
         exit(1);
     }
 }
 
 static void __attribute__((constructor)) initialize(void)
 {
+    int32_t  *mk_reloc_addr;
+    int64_t  mk_reloc_pc;
+    
+    Class mkClass;
+    SEL   mkSel;
+    IMP   mkImp;
+    
     printf("[+] Initializing libskip\n");
     
-    printf("[+] Resolving mediaKey handler address\n");
-    mkHandler = resolve_mediaKey_subproc_addr(&mk_reloc_addr, &mk_reloc_pc);
-    printf("[+] mediaKey handler address at %p\n\treloc address at %p\n\treloc pc 0x%llx\n",mkHandler, mk_reloc_addr, mk_reloc_pc);
+    mkClass = NSClassFromString(@"SPTBrowserClientMacObjCAnnex");
+    mkSel = NSSelectorFromString(@"mediaKeyTap:receivedMediaKeyEvent:");
+    mkImp = class_getMethodImplementation(mkClass, mkSel);
     
-    orig_mk_reloc_addr = *mk_reloc_addr;
+    mkHandler = resolve_mediaKey_subproc_addr((uint64_t)mkImp,
+                                              &mk_reloc_addr,
+                                              &mk_reloc_pc);
     
-    printf("[+] Patching mediaKey handler\n");
-    patch_mk();
-    printf("[+] Finished patching mediaKey handler\n");
+    printf("[+] mediaKey handler address at %p\n\t\
+           reloc address at %p\n\t\
+           reloc pc 0x%llx\n",
+           mkHandler, mk_reloc_addr, mk_reloc_pc);
+    
+    patch_mk(mk_reloc_addr, mk_reloc_pc);
     
     skipman = [[SkipManager alloc] init];
     asman = [[AppleScriptManager alloc] init];
