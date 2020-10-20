@@ -29,3 +29,5 @@ common/__pycache__/
 iOS/frida-scripts/
 MacOS/Spotify
 .*.swp
+*.o
+*.dylib

@@ -81,7 +81,7 @@ void new_mkHandler(void ***appDelegate, int32_t keyCode)
     prevHandler = (prev_next_func_t *)(*fp);
     nextHandler = (prev_next_func_t *)(*(fp+1));
     
-    prot_addr = fpOff & ps_mask;
+    /*prot_addr = fpOff & ps_mask;
     prot_size = 16 + (fpOff - prot_addr);
 
     printf("[+] Trying to mprotect %llx - %llx\n", prot_addr, prot_addr + prot_size);
@@ -90,16 +90,16 @@ void new_mkHandler(void ***appDelegate, int32_t keyCode)
     {
         perror("[-] Write protect failed");
         exit(1);
-    }
+    }*/
     
     *fp = (uint64_t)(&new_prevHandler);
     *(fp+1) = (uint64_t)(&new_nextHandler);
     
-    if ((mprot_res = mprotect((void *)prot_addr, prot_size, PROT_READ | PROT_EXEC)))
+    /*if ((mprot_res = mprotect((void *)prot_addr, prot_size, PROT_READ | PROT_EXEC)))
     {
         perror("[-] Read | Exec protect failed");
         exit(1);
-    }
+    }*/
     
     handlersSet = 1;
     
