@@ -24,6 +24,9 @@ def read_int(f, nbytes):
 def read_ptr(f):
 	return read_int(f, 4)
 
+def read_str(f, nbytes):
+    return f.read(nbytes).decode('ascii')
+
 def write_int(f, p, nbytes):
 	f.write(bytes([(p >> i*8) & 0xff for i in range(nbytes)]))
 
