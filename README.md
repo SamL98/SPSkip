@@ -10,9 +10,9 @@ On the automatic hooking for MacOS: [https://medium.com/swlh/skiptracing-automat
 
 ## MacOS
 
-The `hook_resolver` directory builds to the library that resolves addresses necessary for hooking.
+The `persistence_ensurer` directory builds to a library that a) observes automatic Spotify updates and b) reinjects itself and the skiptracer library into the downloaded executable.
 
-The `LibSkipMac` directory then uses this library and builds to the final skiptracer that can be inserted into the application binary.
+The `LibSkipMac` directory builds to the final skiptracer that can be inserted into the application binary. It also performs the automatic hook resolution.
 
 ## iOS
 
@@ -22,4 +22,4 @@ The `server` directory contains the code needed to run the server that will list
 
 ## Common
 
-Contains the script `load_dylib.py` that inserts the specified library into the specified binary. It also has the ability to disable ASLR for the binary.
+Contains the script `load_dylib.py` that inserts the specified library into the specified binary. It also has the ability to disable ASLR for the binary and set the max protection value for the `__TEXT` segment.
