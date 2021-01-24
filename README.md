@@ -10,7 +10,7 @@ On the automatic hooking for MacOS: [https://medium.com/swlh/skiptracing-automat
 
 ## MacOS
 
-The `persistence_ensurer` directory builds to a library that a) observes automatic Spotify updates and b) reinjects itself and the skiptracer library into the downloaded executable.
+The `reinjector` directory builds to a library that a) observes automatic Spotify updates and b) reinjects itself and the skiptracer library into the downloaded executable.
 
 The `LibSkipMac` directory builds to the final skiptracer that can be inserted into the application binary. It also performs the automatic hook resolution.
 
