@@ -7,6 +7,6 @@ python ../common/load_dylib.py \
 	--is64 \
 	--disable_aslr \
     --text_maxprot 7 \
-    $(pwd)/LibSkipMac/skiptracer.dylib $(pwd)/persistence_ensurer/persistence_ensurer.dylib
+    $(pwd)/LibSkipMac/spskip_tracer.dylib $(pwd)/reinjector/spskip_reinjector.dylib
 
 mv spmod /Applications/Spotify.app/Contents/MacOS/Spotify

@@ -4,6 +4,9 @@ MacOS/hookcase/*.dylib
 MacOS/hook_resolver/*.o
 MacOS/hook_resolver/*.dylib
 MacOS/hook_resolver/*.dSYM/
+MacOS/reinjector/test_target/*.tgz
+MacOS/reinjector/test_target/Contents/
+MacOS/reinjector/test_target/Spotify.app/
 iOS/*.ipa
 iOS/__handlers__/
 iOS/__pycache__/
@@ -31,3 +34,7 @@ MacOS/Spotify
 .*.swp
 *.o
 *.dylib
+*.dSYM
+*/__pycache__/
+*/.cache*
+*/.ipynb_checkpoints/
