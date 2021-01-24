@@ -24,7 +24,7 @@ int bytesInHeader;
 int numSkipped;
 int numSkippedInSession;
 
-- (id)init
+- (id)init:(NSString *)dateString
 {
     self = [super init];
     
@@ -33,19 +33,20 @@ int numSkippedInSession;
     numSkipped = 0;
     numSkippedInSession = 0;
     
-    [self openSkipFile];
+    NSString * skipFname = [NSString stringWithFormat:SKIP_FNAME_FMT, dateString];
+    [self openSkipFile:skipFname];
     
-    // Read the number of songs previously skipped, or writer 0 if the file is empty
+    // Read the number of songs previously skipped, or write 0 if the file is empty
     numSkipped = [self readNumSkipped];
     
     return self;
 }
 
-- (void) openSkipFile
+- (void)openSkipFile:(NSString *)fname
 {
-    skipFile = fopen(SKIP_FILE_NAME, "r+");
+    skipFile = fopen(fname.UTF8String, "r+");
     if (!skipFile) {
-        skipFile = fopen(SKIP_FILE_NAME, "w+");
+        skipFile = fopen(fname.UTF8String, "w+");
         if (!skipFile) {
             perror("Could not open skip file");
             exit(-1);

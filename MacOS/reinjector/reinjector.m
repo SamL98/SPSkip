@@ -4,7 +4,7 @@
 #import "macho_parser.h"
 #import "macho_editor.h"
 
-#define OLD_BINARY_PATH @"/Applications/Spotify.app/Content/MacOS/Spotify"
+#define OLD_BINARY_PATH @"/Applications/Spotify.app/Contents/MacOS/Spotify"
 //#define OLD_BINARY_PATH @"/Users/samlerner/Projects/SPSkip/MacOS/reinjector/test_target/target"
 
 
@@ -72,8 +72,9 @@ int my_terminationStatus(id self, SEL cmd)
                 NSArray<NSString* >* path_comps = [dylib_path componentsSeparatedByString:@"/"];
                 NSString* dylib_name = path_comps.lastObject;
 
-                if (dylib_name && [dylib_name hasPrefix:@"spskip"])
+                if (dylib_name && [dylib_name hasPrefix:@"spskip"]) {
                     [dylibs_to_insert addObject:dylib_path];
+                }
             }
 
             // 2. Edit the update binary's Mach-O header so that our monkey patching will be accepted by the kernel.

@@ -144,7 +144,7 @@ static void __attribute__((constructor)) initialize(void)
     SEL   mkSel;
     IMP   mkImp;
     
-    printf("[+] Initializing libskip\n");
+    printf("[+] Initializing spskip\n");
     
     mkClass = NSClassFromString(@"SPTBrowserClientMacObjCAnnex");
     mkSel = NSSelectorFromString(@"mediaKeyTap:receivedMediaKeyEvent:");
@@ -160,8 +160,13 @@ static void __attribute__((constructor)) initialize(void)
            mkHandler, mk_reloc_addr, mk_reloc_pc);
     
     patch_mk(mk_reloc_addr, mk_reloc_pc);
+
+    NSDateFormatter * formatter = [[NSDateFormatter alloc] init];
+    formatter.dateFormat = @"MM_dd_yyyy";
+
+    NSString * dateString = [formatter stringFromDate:[NSDate date]];
     
-    skipman = [[SkipManager alloc] init];
+    skipman = [[SkipManager alloc] init:dateString];
     asman = [[AppleScriptManager alloc] init];
 }
 

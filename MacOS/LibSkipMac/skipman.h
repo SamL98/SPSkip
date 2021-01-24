@@ -9,12 +9,13 @@
 #ifndef skipman_h
 #define skipman_h
 
-#define SKIP_FILE_NAME "/Users/samlerner/Documents/Spotify/skipped-new-10_18_2020.csv"
+#define SKIP_FNAME_FMT @"/Users/samlerner/Documents/Spotify/skipped-%@.csv"
 
 #import <Foundation/Foundation.h>
 
 @interface SkipManager : NSObject
 
+- (id)init:(NSString *)dateString;
 - (void)push:(NSString *)tid;
 - (void)pop;
 - (void)close;
