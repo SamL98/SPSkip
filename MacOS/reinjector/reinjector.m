@@ -22,11 +22,6 @@ void hook_meth(NSString* classname, NSString* selname, IMP new_imp, IMP* orig_im
 
     // Replace it with ours.
     class_replaceMethod(class, sel, new_imp, method_getTypeEncoding(meth));
-
-    // DEBUG: Make sure that it worked.
-    meth = class_getInstanceMethod(class, sel);
-    IMP imp = method_getImplementation(meth);
-    assert(imp == new_imp);
 }
 
 void restore_meth(NSString* classname, NSString* selname, IMP orig_imp)

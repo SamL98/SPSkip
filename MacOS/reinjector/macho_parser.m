@@ -22,6 +22,7 @@ NSArray<NSString *> * parse_dylibs(NSString * path)
         size_t      i, lc_off;
         char        dylib_path[DYLIB_PATH_MAXLEN+1];
 
+        // Using a fixed-length dylib path so that we don't have to malloc/realloc for every dylib. Should be OK.
         dylib_path[DYLIB_PATH_MAXLEN] = 0;
 
         fread((void *)&header, sizeof(header_t), 1, file);
@@ -39,14 +40,17 @@ NSArray<NSString *> * parse_dylibs(NSString * path)
             }
             else
             {
+                // Rewind to the start of the LC and re-read it as a LC_LOAD_DYLIB.
                 fseek(file, lc_off, SEEK_SET);
                 fread((void *)&dyc, sizeof(dylib_cmd_t), 1, file);
 
+                // Read the dylib's path using the `name` offset.
                 fseek(file, lc_off + dyc.dylib.name.offset, SEEK_SET);
                 fread((void *)dylib_path, 1, DYLIB_PATH_MAXLEN, file);
 
                 [dylib_paths addObject:[NSString stringWithUTF8String:dylib_path]];
 
+                // Seek to the start of the next LC.
                 fseek(file, lc_off + lc.cmdsize, SEEK_SET);
             }
         }

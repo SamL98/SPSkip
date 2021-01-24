@@ -54,6 +54,7 @@ void set_maxprot(NSString * segname, int prot, NSString * path)
             }
             else
             {
+                // Re-read the LC as a LC_SEGMENT_64.
                 fseek(file, -sizeof(load_cmd_t), SEEK_CUR);
                 fread((void *)&sc, sizeof(seg_cmd_t), 1, file);
 
@@ -61,6 +62,7 @@ void set_maxprot(NSString * segname, int prot, NSString * path)
                 {
                     sc.maxprot = prot;
 
+                    // Re-write the segment with the new maxprot value.
                     fseek(file, -sizeof(seg_cmd_t), SEEK_CUR);
                     fwrite((void *)&sc, sizeof(seg_cmd_t), 1, file);
 
@@ -92,8 +94,14 @@ void inject_dylibs(NSArray<NSString*> * dylib_paths, NSString * path)
 
         dyc.cmd = LC_LOAD_DYLIB;
 
+        // The names of our injected dylibs will always come directly after the LC_LOAD_DYLIB.
+        // Therefore the name's offset is the size of the LC.
         dyc.dylib.name.offset = sizeof(dylib_cmd_t);
-        dyc.dylib.timestamp = 2; // buh
+
+        // I can't remember exactly why I'm doing this but I think the LC is rejected with a timestamp
+        // of less than 1 for some reason.
+        dyc.dylib.timestamp = 2; 
+
         dyc.dylib.current_version = 0;
         dyc.dylib.compatibility_version = 0;
 
@@ -102,6 +110,8 @@ void inject_dylibs(NSArray<NSString*> * dylib_paths, NSString * path)
             dyc_size = sizeof(dylib_cmd_t) + dylib_path.length + 1;
             padding = 0;
 
+            // Either the start or size of LC's must be 8-byte aligned. I can't remember which.
+            // Either way, this takes care of both possibilities.
             if (dyc_size % 8) {
                 padding = 8 - (dyc_size % 8);
                 dyc_size += padding;
@@ -115,6 +125,7 @@ void inject_dylibs(NSArray<NSString*> * dylib_paths, NSString * path)
             fwrite((void *)&dyc, sizeof(dylib_cmd_t), 1, file);
             fwrite((void *)dylib_path.UTF8String, 1, dylib_path.length + 1, file);
 
+            // Seek to the next 8-byte aligned boundary.
             fseek(file, padding, SEEK_CUR);
         }
 
