@@ -36,7 +36,7 @@ void restore_meth(NSString* classname, NSString* selname, IMP orig_imp)
 IMP orig_waitUntilExit;
 typedef void proto_waitUntilExit(id, SEL);
 
-void my_waitUntilExit(id self, SEL cmd)
+void my_waitUntilExit(NSTask * self, SEL cmd)
 {
     // Perform the unpacking (i.e. tar xf).
     ((proto_waitUntilExit *)orig_waitUntilExit)(self, cmd);
@@ -44,9 +44,9 @@ void my_waitUntilExit(id self, SEL cmd)
     // We don't need this hook anymore.
     restore_meth(@"NSConcreteTask", @"waitUntilExit", orig_waitUntilExit);
 
-    NSString * exec = [self valueForKey:@"launchPath"],
-             * cwd = [self valueForKey:@"currentDirectoryPath"];
-    NSArray * args = [self valueForKey:@"arguments"];
+    NSString * exec = self.launchPath,
+             * cwd = self.currentDirectoryPath;
+    NSArray * args = self.arguments;
     
     if (!(exec && cwd && args && \
           [exec isEqualTo:@"/usr/bin/tar"] && \
