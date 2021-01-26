@@ -33,27 +33,33 @@ void restore_meth(NSString* classname, NSString* selname, IMP orig_imp)
 }
 
 
-NSString* update_app_path = NULL;
+IMP orig_waitUntilExit;
+typedef void proto_waitUntilExit(id, SEL);
 
-IMP orig_terminationStatus;
-typedef int proto_terminationStatus(id, SEL);
-
-int my_terminationStatus(id self, SEL cmd)
+void my_waitUntilExit(id self, SEL cmd)
 {
     // Perform the unpacking (i.e. tar xf).
-    int status = ((proto_terminationStatus *)orig_terminationStatus)(self, cmd);
+    ((proto_waitUntilExit *)orig_waitUntilExit)(self, cmd);
 
     // We don't need this hook anymore.
-    restore_meth(@"NSConcreteTask", @"terminationStatus", orig_terminationStatus);
+    restore_meth(@"NSConcreteTask", @"waitUntilExit", orig_waitUntilExit);
+
+    NSString * exec = [self valueForKey:@"launchPath"],
+             * cwd = [self valueForKey:@"currentDirectoryPath"];
+    NSArray * args = [self valueForKey:@"arguments"];
     
-    if (!update_app_path) 
+    if (!(exec && cwd && args && \
+          [exec isEqualTo:@"/usr/bin/tar"] && \
+          [cwd hasSuffix:@"Spotify.app"] && \
+          args.count > 0 && \
+          [args[0] isEqualTo:@"xf"])) 
     {
-        NSLog(@"[NSConcreteTask terminationStatus] called but update_app_path is NULL. This shouldn't happen.");
-        return status;
+        NSLog(@"[NSConcreteTask waitUntilExit] called but update_app_path is NULL. This shouldn't happen.");
+        return;
     }
     else 
     {
-        NSString* update_binary_path = [update_app_path stringByAppendingString:@"/Contents/MacOS/Spotify"];
+        NSString* update_binary_path = [cwd stringByAppendingString:@"/Contents/MacOS/Spotify"];
 
         // 1. Read all of the LC_LOAD_DYLIB's from the about-to-be-updated binary
         //    then keep every dylib with a path of the form .../spskip_XX.dylib.
@@ -62,7 +68,7 @@ int my_terminationStatus(id self, SEL cmd)
         if (!current_dylibs)
         {
             NSLog(@"Could not parse dylibs from %@", OLD_BINARY_PATH);
-            return status;
+            return;
         }
         else
         {
@@ -84,37 +90,13 @@ int my_terminationStatus(id self, SEL cmd)
             // 3. Inject the dylibs we parsed in Step 1. into the update binary.
             inject_dylibs(dylibs_to_insert, update_binary_path);
 
-            return status;
+            return;
         }
     }
 }
 
 
-IMP orig_isDeletableAtFilePath;
-typedef BOOL proto_isDeletableAtFilePath(id, SEL, NSString*);
-
-BOOL my_isDeletableAtFilePath(id self, SEL cmd, NSString* path)
-{
-    // Call the original method.
-    BOOL is_deletable = ((proto_isDeletableAtFilePath *)orig_isDeletableAtFilePath)(self, cmd, path);
-
-    if ([path hasSuffix:@"Spotify.app"])
-    {
-        // We don't need this hook anymore (presumably).
-        restore_meth(@"NSFileManager", @"isDeletableFileAtPath:", orig_isDeletableAtFilePath);
-
-        // Hook terminationStatus so we can get access to the unpacked binary.
-        hook_meth(@"NSConcreteTask", @"terminationStatus", (IMP)my_terminationStatus, &orig_terminationStatus);
-
-        // Keep track of the %.app update path.
-        update_app_path = [NSString stringWithString:path];
-    }
-
-    return is_deletable;
-}
-
-
 static void __attribute__((constructor)) initialize(void)
 {
-    hook_meth(@"NSFileManager", @"isDeletableFileAtPath:", (IMP)my_isDeletableAtFilePath, &orig_isDeletableAtFilePath);
+    hook_meth(@"NSConcreteTask", @"waitUntilExit", (IMP)my_waitUntilExit, &orig_waitUntilExit);
 }
